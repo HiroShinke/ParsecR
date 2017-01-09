@@ -85,24 +85,45 @@ class ParserTest < Test::Unit::TestCase
   test "pM" do
     p  = m( d( tsw("a"), tsw("b") ) )
     success,s,*w = runParser(p,"ababab")
-    assert_equal ["a", "b","a", "b","a", "b"], w
+    assert_equal ["a", "b", "a", "b", "a", "b"], w
+    success,s,*w = runParser(p,"abababxc")
+    assert_equal ["a", "b", "a", "b", "a", "b"], w
+  end
+
+  test "pM: failure" do
+    p  = m( d( tsw("a"), tsw("b") ) )
     success,s,*w = runParser(p,"abababac")
-    assert_equal ["a", "b","a", "b","a", "b"], w
+    assert_equal false, success
+    assert_equal [], w
     success,s,*w = runParser(p,"ac")
+    assert_equal false, success
     assert_equal [], w
   end
 
+  # pM1
+  #
+  
   test "pM1" do
     p  = pM1( d( tsw("a"), tsw("b") ) )
     success,s,*w = runParser(p,"ababab")
-    assert_equal ["a", "b","a", "b","a", "b"], w
+    assert_equal ["a", "b", "a", "b", "a", "b"], w
+    success,s,*w = runParser(p,"abababxc")
+    assert_equal ["a", "b", "a", "b", "a", "b"], w
+  end
+
+  test "pM1: failure" do
+    p  = pM1( d( tsw("a"), tsw("b") ) )
     success,s,*w = runParser(p,"abababac")
-    assert_equal ["a", "b","a", "b","a", "b"], w
+    assert_equal false, success
+    assert_equal [], w
     success,s,*w = runParser(p,"ac")
     assert_equal false, success
     assert_equal 1, s.pos
     assert_equal [], w
   end
+
+  # pSepBy1
+  # 
 
   test "pSepBy1" do
     p  = sb1( tsw("a"), tsw(",") ) 
@@ -110,12 +131,74 @@ class ParserTest < Test::Unit::TestCase
     assert_equal ["a"], w
     success,s,*w = runParser(p,"a,a")
     assert_equal ["a","a"], w
-    success,s,*w = runParser(p,"a,")
-    assert_equal ["a"], w                # is this appropriate?
+    success,s,*w = runParser(p,"a,a;")
+    assert_equal ["a","a"], w
   end
 
+  test "pSepBy1: failure" do
+    p  = sb1( tsw("a"), tsw(",") ) 
+    success,s,*w = runParser(p,"b")
+    assert_equal false, success
+    success,s,*w = runParser(p,"a,")
+    assert_equal false, success
+    assert_equal [], w
+  end
+
+  # pSepBy
+  # 
+
+  test "pSepBy" do
+    p  = sb( tsw("a"), tsw(",") ) 
+    success,s,*w = runParser(p,"a")
+    assert_equal ["a"], w
+    success,s,*w = runParser(p,"a,a")
+    assert_equal ["a","a"], w
+    success,s,*w = runParser(p,"a,a;")
+    assert_equal ["a","a"], w
+
+    success,s,*w = runParser(p,"b")
+    assert_equal true, success
+    assert_equal [], w
+  end
+
+  test "pSepBy: failure" do
+    p  = sb( tsw("a"), tsw(",") ) 
+    success,s,*w = runParser(p,"a,")
+    assert_equal false, success
+    assert_equal [], w
+  end
 
   
+  # pMT
+  # 
 
+  test "pMT" do
+    p0  = d( tsw("a"), tsw("b") )
+    e  = tsw("x")
+    p  = pMT(p0,e)
+    success,s,*w = runParser(p,"x")
+    assert_equal true,  success
+    assert_equal [],    w
+    success,s,*w = runParser(p,"abx")
+    assert_equal true,  success
+    assert_equal ["a","b"],    w
+    success,s,*w = runParser(p,"abababx")
+    assert_equal true,  success
+    assert_equal ["a","b","a","b","a","b"],   w
+  end
+
+  test "pMT: failure" do
+    p0  = d( tsw("a"), tsw("b") )
+    e  = tsw("x")
+    p  = pMT(p0,e)
+    success,s,*w = runParser(p,"y")
+    assert_equal false,  success
+    success,s,*w = runParser(p,"aby")
+    assert_equal false,  success
+    success,s,*w = runParser(p,"abacy")
+    assert_equal false,  success
+  end
+
+  
 end
 
