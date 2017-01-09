@@ -1,4 +1,13 @@
 
+=begin
+
+    A simple caliculator program using ParsecR.
+
+    This is a straightforward port of 
+    an example of the use of pChainl1 
+    in the Text.Parsec hackage page
+
+=end
 
 require 'parsecr.rb'
 
@@ -12,15 +21,8 @@ class Calc
 
     pExpr = nil
     
-    pAddop = o( tr(/\+/), tr(/-/) ) {
-      |w|
-      case w.word
-      when "+"
-        :+.to_proc
-      when "-"
-        :-.to_proc
-      end
-    }
+    pAddop  = o( tr(/\+/) { |_| :+.to_proc },
+                 tr(/-/ ) { |_| :-.to_proc })
     pMulop  = o( tr(/\*/) { |_| :*.to_proc },
                  tr(/\//) { |_| :/.to_proc })
     pDigit  =    tr(/\d+/){ |v| v.word.to_i } 
