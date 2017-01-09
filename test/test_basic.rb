@@ -165,6 +165,7 @@ class ParserTest < Test::Unit::TestCase
     p  = sb( tsw("a"), tsw(",") ) 
     success,s,*w = runParser(p,"a,")
     assert_equal false, success
+    assert_equal 2,     s.pos
     assert_equal [], w
   end
 
@@ -193,10 +194,13 @@ class ParserTest < Test::Unit::TestCase
     p  = pMT(p0,e)
     success,s,*w = runParser(p,"y")
     assert_equal false,  success
+    assert_equal 0,      s.pos
     success,s,*w = runParser(p,"aby")
     assert_equal false,  success
+    assert_equal 2,      s.pos
     success,s,*w = runParser(p,"abacy")
     assert_equal false,  success
+    assert_equal 3,      s.pos
   end
 
   
