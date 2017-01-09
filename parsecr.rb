@@ -294,6 +294,8 @@ module ParsecR
         if success then
           ret.push(*w)
           s = s0
+        elsif s0 != s
+          return [FAILED,s0]
         else
           break
         end
