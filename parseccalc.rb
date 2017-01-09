@@ -1,7 +1,7 @@
 
 =begin
 
-    A simple caliculator program using ParsecR.
+    A simple calculator program using ParsecR.
 
     This is a straightforward port of 
     an example of the use of pChainl1 
