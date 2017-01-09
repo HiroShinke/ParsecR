@@ -56,7 +56,7 @@ module ParsecR
     p.(s)
   end
   
-  def pChar (pred)
+  def pChar(pred)
     lambda {
       |s|
       if ! s.eos? then      
@@ -72,7 +72,7 @@ module ParsecR
     }
   end
 
-  def pNotChar (pred)
+  def pNotChar(pred)
     lambda {
       |s|
       if ! s.eos? then
@@ -172,12 +172,12 @@ module ParsecR
 
   # A is for Action
   # (block interface)
-  def pA (p,&func)
+  def pA(p,&func)
     pAl(p,func)
   end
 
   # (lamda interface)
-  def pAl (p,func)
+  def pAl(p,func)
     lambda {
       |s|
       success,s0,*w = p.(s)
@@ -190,7 +190,7 @@ module ParsecR
   end
   
   # G is for get
-  def pG (p,func)
+  def pG(p,func)
     lambda {
       |s|
       success,s0,*w = p.(s)
@@ -236,7 +236,7 @@ module ParsecR
   end
 
   # L is for label
-  def pL (str,p)
+  def pL(str,p)
     lambda {
       |s|
       success,s0,*w = p.(s)      
@@ -249,7 +249,7 @@ module ParsecR
   end
 
   # K is for skip
-  def pK (p)
+  def pK(p)
     lambda {
       |s|
       success,s0,_ = p.(s)      
@@ -267,7 +267,7 @@ module ParsecR
 
   # D is for "do"
   # the 'monadic' sequence of parsers
-  def pD (*ps)
+  def pD(*ps)
     lambda {
       |s|
       ret = []
@@ -285,7 +285,7 @@ module ParsecR
 
   # M is for many
   # zero or more occurence of p
-  def pM (p)
+  def pM(p)
     lambda {
       |s|
       ret = []
@@ -309,7 +309,7 @@ module ParsecR
 
   ##### manyTill
   # zero or more p ended by endFunc
-  def pMT (p,endFunc)
+  def pMT(p,endFunc)
     lambda {
       |s|
       ret = []
@@ -522,7 +522,7 @@ module ParsecR
 
   # O is for Or
   # the choice combinator
-  def pO (*ps)
+  def pO(*ps)
     lambda {
       |s|
       for p in ps
