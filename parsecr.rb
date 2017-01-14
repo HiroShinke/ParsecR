@@ -372,35 +372,13 @@ module ParsecR
   # and optionaly ended by sep
   # return (p,...)
   def pSepEndBy1(p,sep)
-    lambda {
-      |s|
-      ok = false
-      ret = []
-      loop do
-        success,s,*w = p.(s)
-        if success then
-          ret.push(*w)
-          ok = true
-          success,s = sep.(s)
-          if success then
-          else
-            break
-          end
-        else
-          break
-        end
-      end
-      if ok then
-        return [SUCCESS,s,*ret]
-      else
-        return [FAILED,s]
-      end
-    }
+    pD( p,
+        pM( pD(pK(sep), pOpt(p)) ) )
   end
 
   # zero or more
   def pSepEndBy(p,sep)
-    pO( pSepEndBy1(p,sep), pK(sep) )
+    pOpt( pSepEndBy1(p,sep) )
   end
 
   # the chain combinators
@@ -613,11 +591,13 @@ module ParsecR
   alias k    pKA
   alias l    pLA
   alias m    pMA
+  alias m1   pM1A
   alias u    pUA
   alias o    pOA
   alias d    pDA
   alias c    pCl1A
   alias opt  pOptA
+  alias eb   pEndByA
   alias sb   pSepByA
   alias sb1  pSepBy1A
   alias ws   pWithSepA
