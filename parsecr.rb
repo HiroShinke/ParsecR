@@ -5,19 +5,23 @@
 
 =end
 
+require 'strscan'
+
 class ParserState
 
-  attr :stream, :pos, :lineno, :column
+  attr :stream, :pos, :lineno, :column, :scanner
 
   def initialize(str,pos=0,lineno=1,column=0)
     @stream = str
+    @scanner = StringScanner.new(str)
+    @scanner.pos = pos
     @pos    = pos
     @lineno = lineno
     @column = column
   end
 
   def forwardPos(p)
-    str = curstr[0,p]
+    str = scanner.peek(p);
     nc = str.count("\n")
     ln = str.split(/\n/,-1)
     ParserState.new(@stream,
@@ -33,10 +37,6 @@ class ParserState
 
   def [](i,len)
     @stream[i,len]
-  end
-
-  def curstr
-    @stream[@pos..-1]
   end
 
   def eos?
@@ -80,7 +80,7 @@ module ParsecR
           return [FAILED,s]
         else
           return [SUCCESS,s.forwardPos(1),
-                  Token.new(s.curstr[0],s.pos,s.lineno,s.column)]
+                  Token.new(s.scanner.peek(1),s.pos,s.lineno,s.column)]
         end
       else
         return [FAILED,s]
@@ -91,8 +91,7 @@ module ParsecR
   def predString(str)
     len = str.length
     lambda { |s|
-      curstr = s.curstr
-      if( curstr[0,len] == str ) then
+      if( s.scanner.peek(len) == str ) then
         str
       else
         nil
@@ -101,11 +100,9 @@ module ParsecR
   end
 
   def predRegexp(regexp0)
-    regexp = Regexp.new("^" + regexp0.to_s)
     lambda { |s|
-      curstr = s.curstr
-      if( (m = curstr.match(regexp)) != nil) then
-        m.to_s
+      if( (str = s.scanner.check(regexp0)) != nil) then
+        str
       else
         nil
       end
@@ -129,7 +126,7 @@ module ParsecR
   end
   
   def pAny
-    pChar( ->(s){s.curstr[0]} )
+    pChar( ->(s){s.scanner.peek(1)} )
   end
 
   def pEof
