@@ -109,35 +109,22 @@ module ParsecR
     }
   end
 
-  def pS(str)
-    pChar( predString(str) )
-  end
+  def pS(str);     pChar( predString(str) );   end
+  def pR(regexp);  pChar( predRegexp(regexp)); end
+  def pNS(str);    pNotChar( predString(str)); end 
+  def pNR(regexp); pNotChar( predRegexp(regexp)); end
+  def pAny;        pChar( ->(s){s.scanner.peek(1)} ); end
+  def pEof;        pNotFollowdBy(pAny);        end
   
-  def pR(regexp)
-    pChar( predRegexp(regexp) )
-  end
-
-  def pNS(str)
-    pNotChar( predString(str) )
-  end
-  
-  def pNR(regexp)
-    pNotChar( predRegexp(regexp) )
-  end
-  
-  def pAny
-    pChar( ->(s){s.scanner.peek(1)} )
-  end
-
-  def pEof
-    pNotFollowdBy(pAny)
-  end
-
   ############# high level parsers ##################################
 
   def token(p)
     pU( pD( pK( pR(/\s*/) ), p ) )
   end
+
+  def tR(regexp); token(pR(regexp)); end
+
+  def tS(str)   ; token(pS(str));    end  
 
   # lazy evaluation for mutualy recursive parser
   def pRef(&b)
