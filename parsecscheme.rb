@@ -15,6 +15,59 @@ Number     = Struct.new(:value)
 Str        = Struct.new(:str)
 Bool       = Struct.new(:bool)
 
+class List
+
+  PRIMITIVES = {
+    "+" => lambda { |m,n| m + n },
+    "-" => lambda { |m,n| m - n },
+    "/" => lambda { |m,n| m / n },
+    "*" => lambda { |m,n| m * n }
+  }
+  
+  def eval
+    func,*args = ls.map { |e| e.eval }
+    apply(func,*args)
+  end
+
+  def apply(func,*args)
+    name = func.str
+    if proc = PRIMITIVES[name]
+      proc.(*args)
+    else
+      raise "unknown primitives"
+    end
+  end
+  
+end
+  
+class DottedList
+
+end
+
+class Atom
+  def eval
+    self
+  end
+end
+
+class Number
+  def eval
+    value
+  end
+end
+
+class Str
+  def eval
+    self
+  end
+end
+
+class Bool
+  def eval
+    self
+  end
+end
+
 class Scheme
   include ParsecR
 
@@ -22,7 +75,7 @@ class Scheme
        :expr, :list, :dotted
   
   def initialize
-    @letter = pR(/\w/)
+    @letter = pR(/[a-z]/i)
     @digit  = pR(/\d/)
     @symbol = pR(/[!#$%&|*+\-\/:<=>?@^_~]/)
     @spaces = k(pR(/\s+/))
@@ -85,7 +138,8 @@ class Scheme
         str=readline
         buff += str
         if (pos = (buff =~ /;/)) != nil then
-          p runParser(@expr1,buff[0,pos])
+          success,s,w = runParser(@expr1,buff[0,pos])
+          p w.eval
           buff = ""
         end
       end
