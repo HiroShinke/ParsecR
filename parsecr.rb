@@ -373,7 +373,8 @@ module ParsecR
   # return (p,...)
   def pSepEndBy1(p,sep)
     pD( p,
-        pM( pD(pK(sep), pOpt(p)) ) )
+        pM( pU(pD(pK(sep), p)) ),
+        pOpt(pK(sep)) )
   end
 
   # zero or more
@@ -599,7 +600,9 @@ module ParsecR
   alias opt  pOptA
   alias eb   pEndByA
   alias sb   pSepByA
+  alias seb  pSepEndByA
   alias sb1  pSepBy1A
+  alias seb1 pSepEndBy1A
   alias ws   pWithSepA
   alias ws1  pWithSep1A
 

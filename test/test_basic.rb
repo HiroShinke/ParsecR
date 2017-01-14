@@ -190,7 +190,7 @@ class ParserTest < Test::Unit::TestCase
   # 
 
   test "pSepEndBy1" do
-    p  = sb1( tsw("a"), tsw(",") ) 
+    p  = seb1( tsw("a"), tsw(",") ) 
     success,s,*w = runParser(p,"a")
     assert_equal ["a"], w
     success,s,*w = runParser(p,"a,a")
@@ -204,7 +204,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   test "pSepEndBy1: failure" do
-    p  = sb1( tsw("a"), tsw(",") ) 
+    p  = seb1( tsw("a"), tsw(",") ) 
     success,s,*w = runParser(p,"b")
     assert_equal false, success
     assert_equal 0,     s.pos
@@ -212,7 +212,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   test "pSepEndBy: " do
-    p  = sb( tsw("a"), tsw(",") ) 
+    p  = seb( tsw("a"), tsw(",") ) 
     success,s,*w = runParser(p,"b")
     assert_equal true, success
     assert_equal 0,     s.pos
