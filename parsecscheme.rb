@@ -46,13 +46,13 @@ class Scheme
       Number.new(i)
     }
 
-    @list = sb( r{@expr}, @spaces) {
+    @list = seb( r{@expr}, @spaces) {
       |*ts| List.new( ts )
     }
 
     @dotted = d(
       seb1( r{@expr}, @spaces ),
-      pS("."), opt(@spaces), r{@expr}
+      pS("."), opt(@spaces), r{@expr}, opt(@spaces)
     ) {
       |*head,dot,tail|
       DottedList.new(head,tail)
@@ -67,13 +67,31 @@ class Scheme
                @string,
                @number,
                para( pS("("),
-                     o( u(@list), @dotted ),
+                     o( u(@dotted), @list ),
                      pS(")") )
              )
 
   end
 
+  def mainLoop
+    buff = ""
+    begin
+      loop do
+        str=readline
+        buff += str
+        if (pos = (buff =~ /;/)) != nil then
+          p runParser(@expr,buff[0,pos])
+          buff = ""
+        end
+      end
+    rescue EOFError
+    rescue Exception => e
+      p e
+    end
+  end
+  
 end
 
-
-
+if __FILE__ == $PROGRAM_NAME
+  (Scheme.new).mainLoop()
+end
