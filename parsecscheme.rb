@@ -26,11 +26,15 @@ class Scheme
     @digit  = pR(/\d/)
     @symbol = pR(/[!#$%&|*+\-\/:<=>?@^_~]/)
     @spaces = k(pR(/\s+/))
-    @string = para(pS('"'),
-                   pR(/[^"]*/),
-                   pS('"')) { |t| Str.new(t.word) }
-    @atom   = d( o( @letter, @symbol ),
-                 m(o(@letter, @symbol, @digit))  ) {
+    @string = tokenA( para(pS('"'),
+                           pR(/[^"]*/),
+                           pS('"')) ) {
+      |t| Str.new(t.word)
+    }
+    @atom   = tokenA(
+      d( o( @letter, @symbol ),
+         m(o(@letter, @symbol, @digit))  )
+    ) {
       |*ts|
       s = ts.map { |t| t.word }.join("")
       if s == "#t" then
@@ -41,18 +45,17 @@ class Scheme
         Atom.new(s)
       end
     }
-    @number = m1( @digit ) { |*ts|
+    @number = tokenA( m1( @digit ) ) { |*ts|
       i = ts.map { |t| t.word }.join("").to_i
       Number.new(i)
     }
 
-    @list = seb( r{@expr}, @spaces) {
+    @list = m( r{@expr} ) {
       |*ts| List.new( ts )
     }
 
     @dotted = d(
-      seb1( r{@expr}, @spaces ),
-      pS("."), opt(@spaces), r{@expr}, opt(@spaces)
+      m1( r{@expr} ), tS("."), r{@expr}
     ) {
       |*head,dot,tail|
       DottedList.new(head,tail)
@@ -66,10 +69,12 @@ class Scheme
     @expr = o( @atom,
                @string,
                @number,
-               para( pS("("),
+               para( tS("("),
                      o( u(@dotted), @list ),
-                     pS(")") )
+                     tS(")") )
              )
+
+    @expr1 = d(opt(@spaces), @expr )
 
   end
 
@@ -80,7 +85,7 @@ class Scheme
         str=readline
         buff += str
         if (pos = (buff =~ /;/)) != nil then
-          p runParser(@expr,buff[0,pos])
+          p runParser(@expr1,buff[0,pos])
           buff = ""
         end
       end
