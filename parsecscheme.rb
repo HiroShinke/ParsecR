@@ -18,15 +18,32 @@ Bool       = Struct.new(:bool)
 class List
 
   PRIMITIVES = {
-    "+" => lambda { |m,n| m + n },
-    "-" => lambda { |m,n| m - n },
-    "/" => lambda { |m,n| m / n },
-    "*" => lambda { |m,n| m * n }
+    "+" => lambda { |m,n| Number.new(m.value + n.value) },
+    "-" => lambda { |m,n| Number.new(m.value - n.value) },
+    "/" => lambda { |m,n| Number.new(m.value / n.value) },
+    "*" => lambda { |m,n| Number.new(m.value * n.value) },
+    "<" => lambda { |m,n| Bool.new(m.value < n.value) },
+    ">" => lambda { |m,n| Bool.new(m.value > n.value) },
+    "<=" => lambda { |m,n| Bool.new(m.value <= n.value) },
+    ">=" => lambda { |m,n| Bool.new(m.value >= n.value) }
   }
-  
+
   def eval
-    func,*args = ls.map { |e| e.eval }
-    apply(func,*args)
+    func0,*args0 = ls
+    if func0.instance_of?(Atom) then
+      case func0.str
+      when "if"
+        func0,pred,texpr,eexpr = ls
+        if pred.eval.bool
+          texpr.eval
+        else
+          eexpr.eval
+        end
+      else
+        func,*args = ls.map { |e| e.eval }    
+        apply(func,*args)
+      end
+    end
   end
 
   def apply(func,*args)
@@ -52,7 +69,7 @@ end
 
 class Number
   def eval
-    value
+    self
   end
 end
 
@@ -65,6 +82,9 @@ end
 class Bool
   def eval
     self
+  end
+  def to_s
+    if bool then "#t" else "#f" end
   end
 end
 
