@@ -25,7 +25,18 @@ class List
     "<" => lambda { |m,n| Bool.new(m.value < n.value) },
     ">" => lambda { |m,n| Bool.new(m.value > n.value) },
     "<=" => lambda { |m,n| Bool.new(m.value <= n.value) },
-    ">=" => lambda { |m,n| Bool.new(m.value >= n.value) }
+    ">=" => lambda { |m,n| Bool.new(m.value >= n.value) },
+    "car" => lambda { |m|
+      car,*cdr = m.ls
+      car
+    },
+    "cdr" => lambda { |m|
+      car,*cdr = m.ls
+      List.new(cdr)
+    },
+    "cons" => lambda { |car,cdr|
+      List.new([car,*(cdr.ls)])
+    }
   }
 
   def eval
@@ -39,6 +50,9 @@ class List
         else
           eexpr.eval
         end
+      when "quote"
+        func0,rest = ls
+        rest
       else
         func,*args = ls.map { |e| e.eval }    
         apply(func,*args)
@@ -65,17 +79,26 @@ class Atom
   def eval
     self
   end
+  def to_s
+    str.to_s
+  end
 end
 
 class Number
   def eval
     self
   end
+  def to_s
+    value.to_s
+  end
 end
 
 class Str
   def eval
     self
+  end
+  def to_s
+    str.to_s
   end
 end
 
@@ -92,7 +115,7 @@ class Scheme
   include ParsecR
 
   attr :letter, :symbol, :spaces, :string, :atom, :number,
-       :expr, :list, :dotted
+       :expr, :list, :dotted, :quoted
   
   def initialize
     @letter = pR(/[a-z]/i)
@@ -142,6 +165,7 @@ class Scheme
     @expr = o( @atom,
                @string,
                @number,
+               @quoted,
                para( tS("("),
                      o( u(@dotted), @list ),
                      tS(")") )
