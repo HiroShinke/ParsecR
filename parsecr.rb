@@ -59,7 +59,7 @@ module ParsecR
   def pChar(pred)
     lambda {
       |s|
-      if ! s.eos? then      
+      if true then      
         if (w = pred.(s)) != nil then
           return [SUCCESS,s.forwardPos(w.length),
                   Token.new(w,s.pos,s.lineno,s.column) ]
@@ -119,7 +119,7 @@ module ParsecR
   ############# high level parsers ##################################
 
   def token(p)
-    pU( pD( pK( pR(/\s*/) ), p ) )
+    pU( pD( p, pK( pR(/\s*/) ) ) )
   end
 
   def tR(regexp); token(pR(regexp)); end

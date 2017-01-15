@@ -42,9 +42,9 @@ class ParserTest < Test::Unit::TestCase
   test "test token(pR)" do
 
     p = token(pR(/\w+/))
-    success,s,w = runParser(p," abc")
+    success,s,w = runParser(p,"abc ")
     assert_equal w.line,  1
-    assert_equal w.pos,   1
+    assert_equal w.pos,   0
     assert_equal w.word, "abc"
     
   end
@@ -53,10 +53,10 @@ class ParserTest < Test::Unit::TestCase
 
     p0 = token(pR(/\w+/))
     p  = d(p0,p0)
-    success,s,w1,w2 = runParser(p," abc \n efg")
+    success,s,w1,w2 = runParser(p,"abc \n efg ")
     assert_equal w1.word, "abc"
     assert_equal w2.word, "efg"
-    assert_equal w2.pos,  7
+    assert_equal w2.pos,  6
     assert_equal w2.column, 1
     assert_equal w2.line, 2
 
