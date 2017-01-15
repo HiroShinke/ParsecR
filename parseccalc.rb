@@ -16,11 +16,12 @@ class Calc
 
   def tr(reg,&proc) ; tokenA(pR(reg),&proc) ; end
   def ts(str,&proc) ; tokenA(pS(str),&proc) ; end
-  
+
   def createParser 
 
     pExpr = nil
-    
+
+    spaces  = k(pR(/\s*/))
     pAddop  = o( tr(/\+/) { |_| :+.to_proc },
                  tr(/-/ ) { |_| :-.to_proc })
     pMulop  = o( tr(/\*/) { |_| :*.to_proc },
@@ -31,6 +32,7 @@ class Calc
     pTerm   = c( pFactor, pMulop )
     pExpr   = c( pTerm,   pAddop )
 
+    d(spaces, pExpr)
   end
 
   def mainLoop 
