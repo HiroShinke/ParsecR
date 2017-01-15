@@ -8,8 +8,9 @@ def dotted(*ls,tail); DottedList.new(ls,tail); end
 def number(v); Number.new(v); end
 def str(str); Str.new(str); end
 def bool(b); Bool.new(b); end
+def quoted(exp); list(atom("quote"),exp); end
 
-class TestSchme < Test::Unit::TestCase
+  class TestSchme < Test::Unit::TestCase
   
   def setup
     @parser = Scheme.new
@@ -105,6 +106,31 @@ class TestSchme < Test::Unit::TestCase
                         atom("c"),
                         list(atom("d"),
                              atom("e"))),t
+  end
+
+  test "quoted: 1" do
+    success,s,t = @parser.runParser(@parser.expr,"'a")
+    assert_equal quoted(atom("a")), t
+  end
+
+  test "quoted: 2" do
+    success,s,t = @parser.runParser(@parser.expr,"'(a b)")
+    assert_equal quoted(list(atom("a"),
+                             atom("b"))), t
+  end
+
+  test "quoted: 3" do
+    success,s,t = @parser.runParser(@parser.expr,"(a 'b)")
+    assert_equal list(atom("a"),
+                      quoted(atom("b"))), t
+  end
+
+  test "quoted: 4" do
+    success,s,t = @parser.runParser(@parser.expr,"(cons a '(b c))")
+    assert_equal list(atom("cons"),
+                      atom("a"),
+                      quoted(list(atom("b"),
+                                  atom("c")))),t
   end
 
 end
