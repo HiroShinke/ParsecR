@@ -15,6 +15,46 @@ Number     = Struct.new(:value)
 Str        = Struct.new(:str)
 Bool       = Struct.new(:bool)
 
+
+class Env
+
+  attr :parent,:dict
+  
+  def initialize(par = nil)
+    @parent = par
+    @dict = {}
+  end
+  
+  def get(k)
+    if dict.key?(k)
+      dict[k]
+    elsif parent
+      parent.get(k)
+    else
+      nil
+    end
+  end
+
+  def set(k,v)
+    if dict.key?(k)
+      dict[k] = v
+    elsif parent
+      parent.set(k,v)
+    else
+      raise "variable not defined!!"
+    end
+  end
+
+  def define(k,v)
+    if dict.key?(k)
+      raise "variable already defined!!"
+    else
+      dict[k] = v
+    end
+  end
+
+end
+
 class List
 
   PRIMITIVES = {
@@ -39,7 +79,7 @@ class List
     }
   }
 
-  def eval
+  def eval(env)
     func0,*args0 = ls
     if func0.instance_of?(Atom) then
       case func0.str
@@ -65,10 +105,14 @@ class List
     if proc = PRIMITIVES[name]
       proc.(*args)
     else
-      raise "unknown primitives"
+      raise "unknown primitive function"
     end
   end
   
+  def to_s
+    "(" + ls.map { |e| e.to_s }.join(" ") + ")"
+  end
+
 end
   
 class DottedList
@@ -183,7 +227,7 @@ class Scheme
         buff += str
         if (pos = (buff =~ /;/)) != nil then
           success,s,w = runParser(@expr1,buff[0,pos])
-          p w.eval
+          print w.eval,"\n"
           buff = ""
         end
       end
