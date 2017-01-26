@@ -21,6 +21,7 @@ end
 
 
 class List
+  include Enumerable
 
   def eval(env)
     func0,*args0 = ls
@@ -31,7 +32,21 @@ class List
   def to_s
     "(" + ls.map { |e| e.to_s }.join(" ") + ")"
   end
+  
+  def each(*params,&proc)
+    ls.each(*params,&proc)
+  end
 
+  def car
+    car,*cdr = ls
+    car
+  end
+
+  def cdr
+    car,*cdr = ls
+    List.new(cdr)
+  end
+  
 end
   
 class DottedList

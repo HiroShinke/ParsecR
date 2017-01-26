@@ -63,14 +63,8 @@ class Scheme
     ">" =>  prim { |e,m,n| Bool.new(m.value > n.value) },
     "<=" => prim { |e,m,n| Bool.new(m.value <= n.value) },
     ">=" => prim { |e,m,n| Bool.new(m.value >= n.value) },
-    "car" => prim { |e,m|
-      car,*cdr = m.ls
-      car
-    },
-    "cdr" => prim { |e,m|
-      car,*cdr = m.ls
-      List.new(cdr)
-    },
+    "car" => prim { |e,m| m.car },
+    "cdr" => prim { |e,m| m.cdr },
     "cons" => prim { |e,car,cdr|
       List.new([car,*(cdr.ls)])
     },
@@ -81,6 +75,20 @@ class Scheme
       else
         eexpr.eval(env)
       end
+    },
+    "let" => syntax {
+      |env0,assignments,*exprs|
+      env = Env.new(env0)
+      for asgn in assignments
+        sym = asgn.car
+        val = asgn.cdr.car.eval(env0)
+        env.define(sym.str,val)
+      end
+      ret = nil
+      for e in exprs
+        ret = e.eval(env)
+      end
+      ret
     },
     "setq" => syntax {
       |env,sym,expr|
