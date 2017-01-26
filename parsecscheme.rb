@@ -7,7 +7,7 @@
 =end
 
 require 'parsecr.rb'
-require 'schemedata.rb'
+require 'schemeobj.rb'
 
 class Env
 
