@@ -14,11 +14,24 @@ DottedList = Struct.new(:ls,:tail)
 Number     = Struct.new(:value)
 Str        = Struct.new(:str)
 Bool       = Struct.new(:bool)
+Prim       = Struct.new(:proc)
+Syntax     = Struct.new(:proc)
+Closure    = Struct.new(:expr,:env)
+Macro      = Struct.new(:expr)
+
+def prim(&proc)
+  Prim.new(proc)
+end
+
+def syntax(&proc)
+  Syntax.new(proc)
+end
 
 
 class Env
 
-  attr :parent,:dict
+  attr :parent
+  attr_accessor :dict
   
   def initialize(par = nil)
     @parent = par
@@ -57,56 +70,10 @@ end
 
 class List
 
-  PRIMITIVES = {
-    "+" => lambda { |m,n| Number.new(m.value + n.value) },
-    "-" => lambda { |m,n| Number.new(m.value - n.value) },
-    "/" => lambda { |m,n| Number.new(m.value / n.value) },
-    "*" => lambda { |m,n| Number.new(m.value * n.value) },
-    "<" => lambda { |m,n| Bool.new(m.value < n.value) },
-    ">" => lambda { |m,n| Bool.new(m.value > n.value) },
-    "<=" => lambda { |m,n| Bool.new(m.value <= n.value) },
-    ">=" => lambda { |m,n| Bool.new(m.value >= n.value) },
-    "car" => lambda { |m|
-      car,*cdr = m.ls
-      car
-    },
-    "cdr" => lambda { |m|
-      car,*cdr = m.ls
-      List.new(cdr)
-    },
-    "cons" => lambda { |car,cdr|
-      List.new([car,*(cdr.ls)])
-    }
-  }
-
   def eval(env)
     func0,*args0 = ls
-    if func0.instance_of?(Atom) then
-      case func0.str
-      when "if"
-        func0,pred,texpr,eexpr = ls
-        if pred.eval.bool
-          texpr.eval
-        else
-          eexpr.eval
-        end
-      when "quote"
-        func0,rest = ls
-        rest
-      else
-        func,*args = ls.map { |e| e.eval }    
-        apply(func,*args)
-      end
-    end
-  end
-
-  def apply(func,*args)
-    name = func.str
-    if proc = PRIMITIVES[name]
-      proc.(*args)
-    else
-      raise "unknown primitive function"
-    end
+    func = func0.eval(env)
+    func.apply(env,*args0)
   end
   
   def to_s
@@ -120,8 +87,9 @@ class DottedList
 end
 
 class Atom
-  def eval
-    self
+  def eval(env)
+    o = env.get(str)
+    o
   end
   def to_s
     str.to_s
@@ -129,7 +97,7 @@ class Atom
 end
 
 class Number
-  def eval
+  def eval(env)
     self
   end
   def to_s
@@ -138,7 +106,7 @@ class Number
 end
 
 class Str
-  def eval
+  def eval(env)
     self
   end
   def to_s
@@ -147,7 +115,7 @@ class Str
 end
 
 class Bool
-  def eval
+  def eval(env)
     self
   end
   def to_s
@@ -155,8 +123,62 @@ class Bool
   end
 end
 
+class Prim
+  def eval(env)
+    self
+  end
+  def apply(env,*args0)
+    args = args0.map { |e| e.eval(env) }    
+    proc.(env,*args)
+  end
+end
+
+class Syntax
+  def eval(env)
+    self
+  end
+  def apply(env,*args)
+    proc.(env,*args)
+  end
+end
+
 class Scheme
   include ParsecR
+
+  Root = Env.new
+  Root.dict = {
+    "+" =>  prim { |e,m,n| Number.new(m.value + n.value) },
+    "-" =>  prim { |e,m,n| Number.new(m.value - n.value) },
+    "/" =>  prim { |e,m,n| Number.new(m.value / n.value) },
+    "*" =>  prim { |e,m,n| Number.new(m.value * n.value) },
+    "<" =>  prim { |e,m,n| Bool.new(m.value < n.value) },
+    ">" =>  prim { |e,m,n| Bool.new(m.value > n.value) },
+    "<=" => prim { |e,m,n| Bool.new(m.value <= n.value) },
+    ">=" => prim { |e,m,n| Bool.new(m.value >= n.value) },
+    "car" => prim { |e,m|
+      car,*cdr = m.ls
+      car
+    },
+    "cdr" => prim { |e,m|
+      car,*cdr = m.ls
+      List.new(cdr)
+    },
+    "cons" => prim { |e,car,cdr|
+      List.new([car,*(cdr.ls)])
+    },
+    "if" => syntax {
+      |env,pred,texpr,eexpr|
+      if pred.eval(env).bool
+        texpr.eval(env)
+      else
+        eexpr.eval(env)
+      end
+    },
+    "quote" => syntax {
+      |env,expr|
+      expr
+    }
+  }
 
   attr :letter, :symbol, :spaces, :string, :atom, :number,
        :expr, :list, :dotted, :quoted
@@ -227,7 +249,7 @@ class Scheme
         buff += str
         if (pos = (buff =~ /;/)) != nil then
           success,s,w = runParser(@expr1,buff[0,pos])
-          print w.eval,"\n"
+          print w.eval(Root),"\n"
           buff = ""
         end
       end
