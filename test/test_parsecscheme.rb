@@ -52,7 +52,7 @@ def quoted(exp); list(atom("quote"),exp); end
     assert_equal Atom.new("a-b-c"), t
 
     success,s,t = @parser.runParser(@parser.atom,"#f")
-    assert_equal Bool.new(false), t
+    assert_equal Atom.new("#f"), t
     
   end
 

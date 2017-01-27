@@ -55,6 +55,8 @@ class Scheme
 
   Root = Env.new
   Root.dict = {
+    "#t" => Bool.new(true),
+    "#f" => Bool.new(false),
     "+" =>  prim { |e,m,n| Number.new(m.value + n.value) },
     "-" =>  prim { |e,m,n| Number.new(m.value - n.value) },
     "/" =>  prim { |e,m,n| Number.new(m.value / n.value) },
@@ -119,13 +121,7 @@ class Scheme
     ) {
       |*ts|
       s = ts.map { |t| t.word }.join("")
-      if s == "#t" then
-        Bool.new(true)
-      elsif s == "#f" then
-        Bool.new(false)
-      else
-        Atom.new(s)
-      end
+      Atom.new(s)
     }
     @number = tokenA( m1( @digit ) ) { |*ts|
       i = ts.map { |t| t.word }.join("").to_i
