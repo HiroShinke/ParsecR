@@ -1,5 +1,5 @@
 
-require "parsecscheme.rb"
+require "schemeenv.rb"
 require "test/unit"
 
 class TestSchme < Test::Unit::TestCase
