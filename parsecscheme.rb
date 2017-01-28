@@ -13,25 +13,52 @@ require 'schemeenv.rb'
 class Scheme
   include ParsecR
 
+  def self.chainPrim(v=nil,&proc)
+    if v != nil
+      prim { 
+        |env,expr|
+        expr.inject(v,&proc)
+      }
+    else
+      prim { 
+        |env,expr|
+        expr.inject(&proc)
+      }
+    end
+  end
+
+  def self.binPrim(&proc)
+      prim { 
+        |env,expr|
+        h = expr.head
+        t = expr.tail.head
+        proc.(h,t)
+      }
+  end
+  
   Root = Env.new
   Root.dict = {
-    "#t" => Bool.new(true),
-    "#f" => Bool.new(false),
-    "+" =>  prim { |e,m,n| Number.new(m.value + n.value) },
-    "-" =>  prim { |e,m,n| Number.new(m.value - n.value) },
-    "/" =>  prim { |e,m,n| Number.new(m.value / n.value) },
-    "*" =>  prim { |e,m,n| Number.new(m.value * n.value) },
-    "<" =>  prim { |e,m,n| Bool.new(m.value < n.value) },
-    ">" =>  prim { |e,m,n| Bool.new(m.value > n.value) },
-    "<=" => prim { |e,m,n| Bool.new(m.value <= n.value) },
-    ">=" => prim { |e,m,n| Bool.new(m.value >= n.value) },
-    "car" => prim { |e,m| m.car },
-    "cdr" => prim { |e,m| m.cdr },
-    "cons" => prim { |e,car,cdr|
-      List.new([car,*(cdr.ls)])
+    "#t" =>  Bool.new(true),
+    "#f" =>  Bool.new(false),
+    "+"  =>  chainPrim { |m,n| Number.new(m.value + n.value) },
+    "-"  =>  chainPrim { |m,n| Number.new(m.value - n.value) },
+    "/"  =>  chainPrim { |m,n| Number.new(m.value / n.value) },
+    "*"  =>  chainPrim { |m,n| Number.new(m.value * n.value) },
+    "eq"  => binPrim   { |m,n| Bool.new(m.value == n.value) },
+    "<"  =>  binPrim   { |m,n| Bool.new(m.value < n.value) },
+    ">"  =>  binPrim   { |m,n| Bool.new(m.value > n.value) },
+    "<=" =>  binPrim   { |m,n| Bool.new(m.value <= n.value) },
+    ">=" =>  binPrim   { |m,n| Bool.new(m.value >= n.value) },
+    "car" => prim      { |e,m| m.car },
+    "cdr" => prim      { |e,m| m.cdr },
+    "cons" => prim     { |e,car,cdr|
+      Cons.new([car,*(cdr.ls)])
     },
     "if" => syntax {
-      |env,pred,texpr,eexpr|
+      |env,expr0|
+      pred  = expr0.car
+      texpr = expr0.cdr.car
+      eexpr = expr0.cdr.cdr.car
       if pred.eval(env).bool
         texpr.eval(env)
       else
@@ -39,7 +66,9 @@ class Scheme
       end
     },
     "let" => syntax {
-      |env0,assignments,*exprs|
+      |env0,exprs0|
+      assignments = exprs0.car
+      exprs = exprs0.cdr
       env = Env.new(env0)
       for asgn in assignments
         sym = asgn.car
@@ -53,7 +82,9 @@ class Scheme
       ret
     },
     "setq" => syntax {
-      |env,sym,expr|
+      |env,expr0|
+      sym  = expr0.car
+      expr = expr0.cdr.car
       env.define(sym.str,expr.eval(env))
     },
     "quote" => syntax {
@@ -89,19 +120,19 @@ class Scheme
     }
 
     @list = m( r{@expr} ) {
-      |*ts| List.new( ts )
+      |*ts| Cons.from_a( ts )
     }
 
     @dotted = d(
       m1( r{@expr} ), tS("."), r{@expr}
     ) {
       |*head,dot,tail|
-      DottedList.new(head,tail)
+      Cons.new(head,tail)
     }
 
     @quoted = d( pS("'"), r{@expr} ) {
       |apos,expr|
-      List.new([Atom.new("quote"), expr])
+      Cons.from_a([Atom.new("quote"), expr])
     }
 
     @expr = o( @atom,
