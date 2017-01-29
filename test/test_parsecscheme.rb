@@ -4,7 +4,7 @@ require "test/unit"
 
 def atom(str); Atom.new(str); end
 def list(*ls); Cons.from_a(ls); end
-def dotted(*ls,tail); Cons.new(ls,tail); end
+def dotted(*ls,tail); Cons.from_a(ls,tail); end
 def number(v); Number.new(v); end
 def str(str); Str.new(str); end
 def bool(b); Bool.new(b); end

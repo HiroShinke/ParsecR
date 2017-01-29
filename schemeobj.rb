@@ -222,24 +222,37 @@ class Syntax
 end
 
 class Closure
+
   def eval(env)
     self
   end
+
   def apply(env,args0)
-    params,body = expr
-    args = args0.map { |e| e.eval(env) } 
+    params = expr.head
+    bodys  = expr.tail
+    args = args0.map { |e| e.eval(env) }
     env = makeBindings(params,args)
+    ret = nil
+    for b in bodys
+      ret = b.eval(env)
+    end
+    ret
   end
-  
+
   def makeBindings(params,args)
     env = Env.new(lenv)
-    i = 0
-    while i < params.length
-      p = params[i]
-      a = args[i]
-      env.define(p.str,a)
-    end
+    params.each {
+      |p|
+      env.define(p.str,args.head)
+      args = args.tail
+    }
     env
   end
 
+  def to_s
+    "<closure " + object_id.inspect + ">"
+  end
+  
 end
+
+

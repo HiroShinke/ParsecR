@@ -87,9 +87,19 @@ class Scheme
       expr = expr0.cdr.car
       env.define(sym.str,expr.eval(env))
     },
+    "define" => syntax {
+      |env,expr0|
+      sym  = expr0.car
+      expr = expr0.cdr.car
+      env.define(sym.str,expr.eval(env))
+    },
     "quote" => syntax {
       |env,expr|
       expr
+    },
+    "lambda" => syntax {
+      |env,expr|
+      Closure.new(expr,env)
     }
   }
 
