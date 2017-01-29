@@ -167,8 +167,7 @@ class Scheme
         str=readline
         buff += str
         if (pos = (buff =~ /;/)) != nil then
-          success,s,w = runParser(@expr1,buff[0,pos])
-          print w.eval(Root),"\n"
+          print evalLine(buff[0,pos]),"\n"
           buff = ""
         end
       end
@@ -178,6 +177,11 @@ class Scheme
     end
   end
   
+  def evalLine(s)
+    success,s,w = runParser(@expr1,s)
+    w.eval(Root)
+  end
+
 end
 
 if __FILE__ == $PROGRAM_NAME
