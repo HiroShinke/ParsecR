@@ -2,18 +2,16 @@
 require "schemeobj.rb"
 require "test/unit"
 
+def atom(str); Atom.new(str); end
+def list(*ls); Cons.from_a(ls); end
+def dotted(*ls,tail); Cons.from_a(ls,tail); end
+def number(v); Number.new(v); end
+def str(str); Str.new(str); end
+def bool(b); Bool.new(b); end
+def quoted(exp); list(atom("quote"),exp); end
+
 class TestSchme < Test::Unit::TestCase
   
-  test "basic cons.from_a" do
-    e = Cons.from_a([1,2,3])
-    assert_equal "(1 2 3)", e.to_s
-  end
-
-  test "basic cons.from_a empty" do
-    e = Cons.from_a([])
-    assert_equal "()", e.to_s
-  end
-
   test "basic cons.inject(10)" do
     e = Cons.from_a([1,2,3])
     assert_equal 16, e.inject(10) { |m,n| m + n }
@@ -42,6 +40,19 @@ class TestSchme < Test::Unit::TestCase
     assert_equal "123", r
   end
 
-  
+  test "to_s: list" do
+    c = list(atom("a"),atom("b"),atom("c"))
+    assert_equal "(a b c)", c.to_s
+  end
+
+  test "to_s: dotted" do
+    c = dotted(atom("a"),atom("b"),atom("c"))
+    assert_equal "(a b . c)", c.to_s
+  end
+
+  test "basic cons.from_a empty" do
+    e = Cons.from_a([])
+    assert_equal "()", e.to_s
+  end
 
 end

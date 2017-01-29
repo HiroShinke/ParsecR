@@ -66,9 +66,9 @@ class Cons
     @tail = t
   end
 
-  def self.from_a(a)
+  def self.from_a(a,x=Nil::NIL)
     r = a.reverse
-    r.inject(Nil::NIL) { |c,e| Cons.new(e,c) }
+    r.inject(x) { |c,e| Cons.new(e,c) }
   end
 
   def eval(env)
@@ -81,14 +81,21 @@ class Cons
   end
 
   def to_s0
-    inject("") {
-      |v,e|
+    v  = ""
+    c = self
+    while c.instance_of?(Cons)
+      e = c.head
       if v == ""
-        e.to_s
+        v = e.to_s
       else
-        v + " " + e.to_s
+        v = v + " " + e.to_s
       end
-    }
+      c = c.tail
+    end
+    if c != Nil::NIL
+      v = v + " . " + c.to_s
+    end
+    v
   end
 
   def each(*params,&proc)

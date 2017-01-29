@@ -127,7 +127,7 @@ class Scheme
       m1( r{@expr} ), tS("."), r{@expr}
     ) {
       |*head,dot,tail|
-      Cons.new(head,tail)
+      Cons.from_a(head,tail)
     }
 
     @quoted = d( pS("'"), r{@expr} ) {
