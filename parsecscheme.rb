@@ -36,8 +36,7 @@ class Scheme
       }
   end
   
-  Root = Env.new
-  Root.dict = {
+  Dict0 = {
     "#t" =>  Bool.new(true),
     "#f" =>  Bool.new(false),
     "+"  =>  chainPrim { |m,n| Number.new(m.value + n.value) },
@@ -109,6 +108,10 @@ class Scheme
        :expr, :list, :dotted, :quoted
   
   def initialize
+
+    @root = Env.new
+    @root.dict = Dict0.clone
+
     @letter = pR(/[a-z]/i)
     @digit  = pR(/\d/)
     @symbol = pR(/[!#$%&|*+\-\/:<=>?@^_~]/)
@@ -179,7 +182,7 @@ class Scheme
   
   def evalLine(s)
     success,s,w = runParser(@expr1,s)
-    w.eval(Root)
+    w.eval(@root)
   end
 
 end
