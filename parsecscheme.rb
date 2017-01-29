@@ -49,10 +49,12 @@ class Scheme
     ">"  =>  binPrim   { |m,n| Bool.new(m.value > n.value) },
     "<=" =>  binPrim   { |m,n| Bool.new(m.value <= n.value) },
     ">=" =>  binPrim   { |m,n| Bool.new(m.value >= n.value) },
-    "car" => prim      { |e,m| m.car },
-    "cdr" => prim      { |e,m| m.cdr },
-    "cons" => prim     { |e,car,cdr|
-      Cons.new([car,*(cdr.ls)])
+    "car" => prim      { |e,expr| expr.car.car },
+    "cdr" => prim      { |e,expr| expr.car.cdr },
+    "cons" => prim     { |e,expr|
+      car = expr.car
+      cdr = expr.cdr.car
+      Cons.new(car,cdr)
     },
     "if" => syntax {
       |env,expr0|
@@ -95,7 +97,7 @@ class Scheme
     },
     "quote" => syntax {
       |env,expr|
-      expr
+      expr.car
     },
     "lambda" => syntax {
       |env,expr|

@@ -60,6 +60,8 @@ class Cons
   include Enumerable
 
   attr_accessor :head, :tail
+  alias car head
+  alias cdr tail
 
   def initialize(h,t)
     @head = h
@@ -116,14 +118,6 @@ class Cons
 
   def map(&proc)
     Cons.new(proc.(head),tail.map(&proc))
-  end
-
-  def car
-    head
-  end
-
-  def cdr
-    tail
   end
 
   def ==(o)
@@ -241,12 +235,16 @@ class Closure
 
   def makeBindings(params,args)
     env = Env.new(lenv)
-    params.each {
-      |p|
+    while params.instance_of?(Cons)
+      p = params.head
       env.define(p.str,args.head)
-      args = args.tail
-    }
-    env
+      params = params.tail
+      args   = args.tail
+    end
+    if params != Nil::NIL
+      env.define(params.str,args)
+    end
+  env
   end
 
   def to_s
