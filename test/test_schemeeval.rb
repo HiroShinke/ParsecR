@@ -92,6 +92,11 @@ class TestSchme < Test::Unit::TestCase
     assert_equal Number.new(3), x
   end
 
+  test "lambda: 3" do
+    x = @parser.evalLine("((lambda (n . m) (+ n (car m))) 1 2)")
+    assert_equal Number.new(3), x
+  end
+
   test "if: 1" do
     x = @parser.evalLine("(if #t 1 2)")
     assert_equal Number.new(1), x
