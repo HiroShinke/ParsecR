@@ -10,7 +10,7 @@ def str(str); Str.new(str); end
 def bool(b); Bool.new(b); end
 def quoted(exp); list(atom("quote"),exp); end
 
-  class TestSchme < Test::Unit::TestCase
+class TestSchme < Test::Unit::TestCase
   
   def setup
     @parser = Scheme.new
@@ -52,7 +52,7 @@ def quoted(exp); list(atom("quote"),exp); end
     assert_equal Atom.new("a-b-c"), t
 
     success,s,t = @parser.runParser(@parser.atom,"#f")
-    assert_equal Atom.new("#f"), t
+    assert_equal Bool.new(false), t
     
   end
 
@@ -133,4 +133,21 @@ def quoted(exp); list(atom("quote"),exp); end
                                   atom("c")))),t
   end
 
+  test "quasiquoted: 1" do
+    success,s,t = @parser.runParser(@parser.expr,"`a")
+    assert_equal list(atom("quasiquote"),atom("a")), t
+
+  end
+
+  test "unquote: 1" do
+    success,s,t = @parser.runParser(@parser.expr,",a")
+    assert_equal list(atom("unquote"),atom("a")), t
+  end
+
+  test "unquote-splicing: 1" do
+    success,s,t = @parser.runParser(@parser.expr,",@a")
+    assert_equal list(atom("unquote-splicing"),atom("a")), t
+  end
+
+  
 end

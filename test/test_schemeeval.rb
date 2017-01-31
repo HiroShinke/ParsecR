@@ -117,5 +117,31 @@ class TestSchme < Test::Unit::TestCase
     assert_equal Atom.new("a"), x
   end
 
+  test "def-macro: 1" do
+    @parser.evalLine("(def-macro f (lambda (n) n))")
+    @parser.evalLine("(setq a 10)")
+    x = @parser.evalLine("(f a)")
+    assert_equal Number.new(10), x
+  end
+
+  test "def-macro: 2" do
+    @parser.evalLine("(def-macro f (lambda (n) n))")
+    @parser.evalLine("(setq a 10)")
+    x = @parser.evalLine("(f 'a)")
+    assert_equal Atom.new("a"), x
+  end
+
+  test "def-macro: 3" do
+    @parser.evalLine("(def-macro myif (lambda (p t e) (if p t e)))")
+    x = @parser.evalLine("(myif #t 10 20)")
+    assert_equal Number.new(10), x
+  end
+
+  test "def-macro: 4" do
+    @parser.evalLine("(def-macro myif (lambda (p t e) (list 'if p t e)))")
+    @parser.evalLine("(myif #t (setq a 10) (setq a 20))")
+    x = @parser.evalLine("a");
+    assert_equal Number.new(10), x
+  end
   
 end

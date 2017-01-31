@@ -8,7 +8,7 @@ Bool       = Struct.new(:bool)
 Prim       = Struct.new(:proc)
 Syntax     = Struct.new(:proc)
 Closure    = Struct.new(:expr,:lenv)
-Macro      = Struct.new(:expr)
+Macro      = Struct.new(:closure)
 
 def prim(&proc)
   Prim.new(proc)
@@ -222,9 +222,13 @@ class Closure
   end
 
   def apply(env,args0)
+    args = args0.map { |e| e.eval(env) }
+    apply0(env,args)
+  end
+
+  def apply0(env,args)
     params = expr.head
     bodys  = expr.tail
-    args = args0.map { |e| e.eval(env) }
     env = makeBindings(params,args)
     ret = nil
     for b in bodys
@@ -232,7 +236,7 @@ class Closure
     end
     ret
   end
-
+  
   def makeBindings(params,args)
     env = Env.new(lenv)
     while params.instance_of?(Cons)
@@ -248,9 +252,27 @@ class Closure
   end
 
   def to_s
-    "<closure " + object_id.inspect + ">"
+    "<closure 0x" + object_id.inspect + ">"
   end
   
 end
+
+class Macro
+
+  def eval(env)
+    self
+  end
+
+  def apply(env,args)
+    expr = closure.apply0(env,args)
+    expr.eval(env)
+  end
+
+  def to_s
+    "<macro 0x" + object_id.inspect + ">"
+  end
+  
+end
+
 
 

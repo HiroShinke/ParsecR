@@ -27,7 +27,7 @@ class TestSchme < Test::Unit::TestCase
 
   test "env.set to undefined" do
     p = Env.new
-    assert_raise(RuntimeError.new("variable not defined!!")) do
+    assert_raise(RuntimeError.new("variable abc not defined!!")) do
       p.set("abc","12345")
     end
   end
@@ -35,7 +35,7 @@ class TestSchme < Test::Unit::TestCase
   test "env.define already defined" do
     p = Env.new
     p.define("abc","12345")
-    assert_raise(RuntimeError.new("variable already defined!!")) do
+    assert_raise(RuntimeError.new("variable abc already defined!!")) do
       p.define("abc","12345")
     end
   end

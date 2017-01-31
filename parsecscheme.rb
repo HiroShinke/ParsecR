@@ -37,8 +37,6 @@ class Scheme
   end
   
   Dict0 = {
-    "#t" =>  Bool.new(true),
-    "#f" =>  Bool.new(false),
     "+"  =>  chainPrim { |m,n| Number.new(m.value + n.value) },
     "-"  =>  chainPrim { |m,n| Number.new(m.value - n.value) },
     "/"  =>  chainPrim { |m,n| Number.new(m.value / n.value) },
@@ -50,6 +48,7 @@ class Scheme
     ">=" =>  binPrim   { |m,n| Bool.new(m.value >= n.value) },
     "car" => prim      { |e,expr| expr.car.car },
     "cdr" => prim      { |e,expr| expr.car.cdr },
+    "list" => prim     { |e,expr| expr },
     "cons" => prim     { |e,expr|
       car = expr.car
       cdr = expr.cdr.car
@@ -94,6 +93,12 @@ class Scheme
       expr = expr0.cdr.car
       env.define(sym.str,expr.eval(env))
     },
+    "def-macro" => syntax {
+      |env,expr0|
+      sym  = expr0.car
+      expr = expr0.cdr.car
+      env.define(sym.str,Macro.new(expr.eval(env)))
+    },
     "quote" => syntax {
       |env,expr|
       expr.car
@@ -127,7 +132,14 @@ class Scheme
     ) {
       |*ts|
       s = ts.map { |t| t.word }.join("")
-      Atom.new(s)
+      case s
+      when "#t"
+        Bool.new(true)
+      when "#f"
+        Bool.new(false)
+      else
+        Atom.new(s)
+      end
     }
     @number = tokenA( m1( @digit ) ) { |*ts|
       i = ts.map { |t| t.word }.join("").to_i
@@ -150,10 +162,28 @@ class Scheme
       Cons.from_a([Atom.new("quote"), expr])
     }
 
+    @quasiquote = d( pS("`"), r{@expr} ) {
+      |apos,expr|
+      Cons.from_a([Atom.new("quasiquote"), expr])
+    }
+
+    @unquote = d( pS(","), r{@expr} ) {
+      |apos,expr|
+      Cons.from_a([Atom.new("unquote"), expr])
+    }
+
+    @unquote_splicing = d( pS(",@"), r{@expr} ) {
+      |apos,expr|
+      Cons.from_a([Atom.new("unquote-splicing"), expr])
+    }
+    
     @expr = o( @atom,
                @string,
                @number,
                @quoted,
+               @quasiquote,
+               @unquote_splicing,
+               @unquote,
                para( tS("("),
                      o( u(@dotted), @list ),
                      tS(")") )
