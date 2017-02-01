@@ -73,6 +73,10 @@ class Cons
     r.inject(x) { |c,e| Cons.new(e,c) }
   end
 
+  def self.list(*a)
+    from_a(a)
+  end
+  
   def eval(env)
     func = head.eval(env)
     func.apply(env,tail)

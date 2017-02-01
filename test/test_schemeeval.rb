@@ -117,6 +117,32 @@ class TestSchme < Test::Unit::TestCase
     assert_equal Atom.new("a"), x
   end
 
+  test "quasiquote: simple" do
+    x = @parser.evalLine("`a")
+    assert_equal Atom.new("a"), x
+  end
+
+  test "quasiquote: nested" do
+    x = @parser.evalLine("``a")
+    success,s,t = @parser.runParser(@parser.expr,"`a")
+    assert_equal t, x
+  end
+
+  test "quasiquote: list" do
+    x = @parser.evalLine("`(a b c)")
+    success,s,t = @parser.runParser(@parser.expr,"(a b c)")
+    assert_equal t, x
+  end
+
+  test "quasiquote: unquote" do
+    x = @parser.evalLine("(setq b 10)")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(a ,b ,c)")
+    success,s,t = @parser.runParser(@parser.expr,"(a 10 20)")
+    assert_equal t, x
+  end
+  
+
   test "def-macro: 1" do
     @parser.evalLine("(def-macro f (lambda (n) n))")
     @parser.evalLine("(setq a 10)")

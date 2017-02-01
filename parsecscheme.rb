@@ -36,6 +36,36 @@ class Scheme
       }
   end
   
+  def self.translate(env,expr,n)
+    case 
+    when expr.class == Cons
+      case 
+      when expr.car.class == Atom
+        sym = expr.car.str
+        case sym
+        when "quote"
+          Cons.new(Atom.new("quote"),translate(env,expr.cdr,n+1))
+        when "quasiquote"
+          Cons.new(Atom.new("quasiquote"),translate(env,expr.cdr,n+1))
+        when "unquote"
+          if n == 1
+            expr.cdr.car.eval(env)
+          else
+            Cons.new(Atom.new("unquote"),translate(env,expr.cdr,n-1))
+          end
+        when "unquote-splicing"
+          raise "not yet implemented"
+        else
+          Cons.new(translate(env,expr.car,n),translate(env,expr.cdr,n))
+        end
+      else
+        Cons.new(translate(env,expr.car,n),translate(env,expr.cdr,n))
+      end
+    else
+      expr
+    end
+  end
+
   Dict0 = {
     "+"  =>  chainPrim { |m,n| Number.new(m.value + n.value) },
     "-"  =>  chainPrim { |m,n| Number.new(m.value - n.value) },
@@ -106,6 +136,10 @@ class Scheme
     "lambda" => syntax {
       |env,expr|
       Closure.new(expr,env)
+    },
+    "quasiquote" => syntax {
+      |env,expr|
+      translate(env,expr.car,1)
     }
   }
 

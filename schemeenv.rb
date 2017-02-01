@@ -27,13 +27,13 @@ class Env
     elsif parent
       parent.set(k,v)
     else
-      raise "variable not defined!!"
+      raise "variable #{k} not defined!!"
     end
   end
 
   def define(k,v)
     if dict.key?(k)
-      raise "variable already defined!!"
+      raise "variable #{k} already defined!!"
     else
       dict[k] = v
     end
