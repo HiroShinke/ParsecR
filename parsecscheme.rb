@@ -36,6 +36,10 @@ class Scheme
       }
   end
   
+  def self.atom(str)
+    Atom.new(str)
+  end
+
   def self.translate(env,expr,n)
     case 
     when expr.class == Cons
@@ -44,25 +48,43 @@ class Scheme
         sym = expr.car.str
         case sym
         when "quote"
-          Cons.new(Atom.new("quote"),translate(env,expr.cdr,n+1))
+          Cons.new(atom("quote"),translate(env,expr.cdr,n))
         when "quasiquote"
-          Cons.new(Atom.new("quasiquote"),translate(env,expr.cdr,n+1))
+          Cons.new(atom("quasiquote"),translate(env,expr.cdr,n+1))
         when "unquote"
-          if n == 1
+          if n == 0
             expr.cdr.car.eval(env)
           else
-            Cons.new(Atom.new("unquote"),translate(env,expr.cdr,n-1))
+            Cons.new(atom("unquote"),translate(env,expr.cdr,n-1))
           end
         when "unquote-splicing"
-          raise "not yet implemented"
+          if n == 0
+            expr.cdr.car.eval(env)
+          else
+            Cons.new(atom("unquote-splicing"),
+                     translate(env,expr.cdr,n-1))
+          end
         else
-          Cons.new(translate(env,expr.car,n),translate(env,expr.cdr,n))
+          Cons.new(translate(env,expr.car,n),
+                   translate(env,expr.cdr,n))
         end
       else
-        Cons.new(translate(env,expr.car,n),translate(env,expr.cdr,n))
+        translateSplicing(env,expr,n)
       end
     else
       expr
+    end
+  end
+
+  def self.translateSplicing(env,expr,n)
+    if n == 0 &&
+       expr.car.car == atom("unquote-splicing")
+      translate(env,expr.car,n).append(
+        translate(env,expr.cdr,n)
+      )
+    else
+      Cons.new(translate(env,expr.car,n),
+               translate(env,expr.cdr,n))
     end
   end
 
@@ -79,6 +101,11 @@ class Scheme
     "car" => prim      { |e,expr| expr.car.car },
     "cdr" => prim      { |e,expr| expr.car.cdr },
     "list" => prim     { |e,expr| expr },
+    "append" => prim   { |e,expr|
+      l1 = expr.car
+      l2 = expr.cdr.car
+      l1.append(l2)
+    },
     "cons" => prim     { |e,expr|
       car = expr.car
       cdr = expr.cdr.car
@@ -139,7 +166,7 @@ class Scheme
     },
     "quasiquote" => syntax {
       |env,expr|
-      translate(env,expr.car,1)
+      translate(env,expr.car,0)
     }
   }
 

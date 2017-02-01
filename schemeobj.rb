@@ -133,6 +133,15 @@ class Cons
     end
   end
 
+  def append(exp0)
+    if @tail == Nil::NIL
+      @tail = exp0
+    else
+      @tail.append(exp0)
+    end
+    self
+  end
+  
 end
 
 class Nil

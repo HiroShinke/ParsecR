@@ -134,15 +134,78 @@ class TestSchme < Test::Unit::TestCase
     assert_equal t, x
   end
 
-  test "quasiquote: unquote" do
+  test "quasiquote: unquote: 1" do
     x = @parser.evalLine("(setq b 10)")
     x = @parser.evalLine("(setq c 20)")
     x = @parser.evalLine("`(a ,b ,c)")
     success,s,t = @parser.runParser(@parser.expr,"(a 10 20)")
     assert_equal t, x
   end
-  
 
+  test "quasiquote: unquote: 2" do
+    x = @parser.evalLine("(setq b 10)")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(x `(a ,b ,c))")
+    success,s,t = @parser.runParser(@parser.expr,"(x `(a ,b ,c))")
+    assert_equal t, x
+  end
+
+  test "quasiquote: unquote: 2.1" do
+    x = @parser.evalLine("(setq b 10)")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(`(a ,b ,c) x)")
+    success,s,t = @parser.runParser(@parser.expr,"(`(a ,b ,c) x)")
+    assert_equal t, x
+  end
+  
+  test "quasiquote: unquote: 3" do
+    x = @parser.evalLine("(setq b 10)")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(x `(a ,(b ,c)))")
+    success,s,t = @parser.runParser(@parser.expr,"(x `(a ,(b 20)))")
+    assert_equal t, x
+  end
+
+  test "quasiquote: unquote: 3.1" do
+    x = @parser.evalLine("(setq b 10)")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(`(a ,(b ,c)) x)")
+    success,s,t = @parser.runParser(@parser.expr,"(`(a ,(b 20)) x)")
+    assert_equal t, x
+  end
+
+  test "quasiquote: unquote-splicing: 1" do
+    x = @parser.evalLine("(setq b '(5 10))")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(a ,@b ,c)")
+    success,s,t = @parser.runParser(@parser.expr,"(a 5 10 20)")
+    assert_equal t, x
+  end
+
+  test "quasiquote: unquote-splicing: 2" do
+    x = @parser.evalLine("(setq b '(5 10))")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(,@b a ,c)")
+    success,s,t = @parser.runParser(@parser.expr,"(5 10 a 20)")
+    assert_equal t, x
+  end
+
+  test "quasiquote: unquote-splicing: 3" do
+    x = @parser.evalLine("(setq b '(5 10))")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(a ,c ,@b)")
+    success,s,t = @parser.runParser(@parser.expr,"(a 20 5 10)")
+    assert_equal t, x
+  end
+  
+  test "quasiquote: unquote-splicing: 4" do
+    x = @parser.evalLine("(setq b '(5 10))")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(x `(a ,(c ,@b)))")
+    success,s,t = @parser.runParser(@parser.expr,"(x `(a ,(c 5 10)))")
+    assert_equal t, x
+  end
+  
   test "def-macro: 1" do
     @parser.evalLine("(def-macro f (lambda (n) n))")
     @parser.evalLine("(setq a 10)")
