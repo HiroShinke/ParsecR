@@ -45,40 +45,45 @@ class Scheme
     when expr.class == Cons
       case 
       when expr.car.class == Atom
-        sym = expr.car.str
-        case sym
-        when "quote"
-          Cons.new(atom("quote"),translate(env,expr.cdr,n))
-        when "quasiquote"
-          Cons.new(atom("quasiquote"),translate(env,expr.cdr,n+1))
-        when "unquote"
-          if n == 0
-            expr.cdr.car.eval(env)
-          else
-            Cons.new(atom("unquote"),translate(env,expr.cdr,n-1))
-          end
-        when "unquote-splicing"
-          if n == 0
-            expr.cdr.car.eval(env)
-          else
-            Cons.new(atom("unquote-splicing"),
-                     translate(env,expr.cdr,n-1))
-          end
-        else
-          Cons.new(translate(env,expr.car,n),
-                   translate(env,expr.cdr,n))
-        end
+        translateCarAtom(env,expr,n)
       else
-        translateSplicing(env,expr,n)
+        translateCarNoAtom(env,expr,n)
       end
     else
       expr
     end
   end
 
-  def self.translateSplicing(env,expr,n)
+  def self.translateCarAtom(env,expr,n)
+    car = expr.car
+    case car.str
+    when "quote"
+      Cons.new(car,translate(env,expr.cdr,n))
+    when "quasiquote"
+      Cons.new(car,translate(env,expr.cdr,n+1))
+    when "unquote"
+      if n == 0
+        expr.cdr.car.eval(env)
+      else
+        Cons.new(car,translate(env,expr.cdr,n-1))
+      end
+    when "unquote-splicing"
+      if n == 0
+        expr.cdr.car.eval(env)
+      else
+        Cons.new(car,translate(env,expr.cdr,n-1))
+      end
+    else
+      Cons.new(translate(env,expr.car,n),
+               translate(env,expr.cdr,n))
+    end
+  end
+  
+  def self.translateCarNoAtom(env,expr,n)
     if n == 0 &&
-       expr.car.car == atom("unquote-splicing")
+       expr.car.class == Cons &&
+       expr.car.car.class == Atom &&
+       expr.car.car.str == "unquote-splicing"
       translate(env,expr.car,n).append(
         translate(env,expr.cdr,n)
       )

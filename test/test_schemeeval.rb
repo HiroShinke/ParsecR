@@ -142,6 +142,30 @@ class TestSchme < Test::Unit::TestCase
     assert_equal t, x
   end
 
+  test "quasiquote: unquote: 1.1" do
+    x = @parser.evalLine("(setq b 10)")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`((a ,b ,c))")
+    success,s,t = @parser.runParser(@parser.expr,"((a 10 20))")
+    assert_equal t, x
+  end
+
+  test "quasiquote: unquote: 1.2" do
+    x = @parser.evalLine("(setq b 10)")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(10 ,b ,c)")
+    success,s,t = @parser.runParser(@parser.expr,"(10 10 20)")
+    assert_equal t, x
+  end
+
+  test "quasiquote: unquote: 1.3" do
+    x = @parser.evalLine("(setq b 10)")
+    x = @parser.evalLine("(setq c 20)")
+    x = @parser.evalLine("`(10 ,(+ b 1) ,c)")
+    success,s,t = @parser.runParser(@parser.expr,"(10 11 20)")
+    assert_equal t, x
+  end
+  
   test "quasiquote: unquote: 2" do
     x = @parser.evalLine("(setq b 10)")
     x = @parser.evalLine("(setq c 20)")
@@ -157,7 +181,7 @@ class TestSchme < Test::Unit::TestCase
     success,s,t = @parser.runParser(@parser.expr,"(`(a ,b ,c) x)")
     assert_equal t, x
   end
-  
+
   test "quasiquote: unquote: 3" do
     x = @parser.evalLine("(setq b 10)")
     x = @parser.evalLine("(setq c 20)")
