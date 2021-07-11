@@ -1,6 +1,7 @@
 # ParsecR
 Yet Another Parsec like parser combinator library for Ruby
 
+[![Ruby](https://github.com/HiroShinke/ParsecR/actions/workflows/ruby.yml/badge.svg)](https://github.com/HiroShinke/ParsecR/actions/workflows/ruby.yml)
 [![ruby version][shield-ruby]](#)
 [![parser combinator][shield-parser]](#)
 [![haskell][shield-haskell]](#)
